@@ -2121,15 +2121,15 @@ namespace units
 			return static_cast<Ty>(units::convert<Units, unit<std::ratio<1>, units::category::scalar_unit>>((*this)()));
 		}
 
-        /**
-         * @brief       implicit type conversion.
-         * @details     only enabled for scalar unit types.
-         */
-        template<class Ty, std::enable_if_t<std::is_arithmetic<Ty>::value, int> = 0>
-        inline constexpr explicit operator Ty&() noexcept
-        {
-            return static_cast<Ty&>((*this)());
-        }
+		/**
+		* @brief       implicit type conversion.
+		* @details     only enabled for scalar unit types.
+		*/
+		template<class Ty, std::enable_if_t<std::is_arithmetic<Ty>::value, int> = 0>
+		inline constexpr explicit operator Ty&() noexcept
+		{
+			return static_cast<Ty&>((*this)());
+		}
 
 		/**
 		 * @brief		explicit type conversion.
