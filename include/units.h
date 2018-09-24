@@ -1648,7 +1648,7 @@ namespace units
 			struct has_operator_parenthesis_impl
 			{
 				template<class U>
-				static constexpr auto test(U*) -> decltype(std::declval<U>()()) { return decltype(std::declval<U>()()){}; }
+				static constexpr auto test(U const*) -> decltype(std::declval<U const>()()) { return decltype(std::declval<U const>()()){}; }
 				template<typename>
 				static constexpr std::false_type test(...) { return std::false_type{}; }
 
@@ -2121,6 +2121,16 @@ namespace units
 			return static_cast<Ty>(units::convert<Units, unit<std::ratio<1>, units::category::scalar_unit>>((*this)()));
 		}
 
+        /**
+         * @brief       implicit type conversion.
+         * @details     only enabled for scalar unit types.
+         */
+        template<class Ty, std::enable_if_t<std::is_arithmetic<Ty>::value, int> = 0>
+        inline constexpr explicit operator Ty&() noexcept
+        {
+            return static_cast<Ty&>((*this)());
+        }
+
 		/**
 		 * @brief		explicit type conversion.
 		 * @details		only enabled for non-dimensionless unit types.
@@ -2450,6 +2460,7 @@ namespace units
 		template<class... Args>
 		inline constexpr linear_scale(const T& value, Args&&...) noexcept : m_value(value) {}	///< constructor.
 		inline constexpr T operator()() const noexcept { return m_value; }							///< returns value.
+		inline constexpr T& operator()() noexcept { return m_value; }                          ///< returns value.
 
 		T m_value;																					///< linearized value.	
 	};
