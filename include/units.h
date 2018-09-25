@@ -2121,11 +2121,22 @@ namespace units
 			return static_cast<Ty>(units::convert<Units, unit<std::ratio<1>, units::category::scalar_unit>>((*this)()));
 		}
 
+        /**
+         * @brief       implicit conversion to underlying_type reference.
+         * @details     only enabled for scalar unit types.
+         */
+        template<class Ty, std::enable_if_t<traits::is_dimensionless_unit<Units>::value && std::is_same<Ty, underlying_type>::value, int> = 0>
+        inline constexpr operator Ty&() noexcept
+        {
+            // this conversion also resolves any PI exponents, by converting from a non-zero PI ratio to a zero-pi ratio.
+            return static_cast<Ty&>((*this)());
+        }
+
 		/**
-		* @brief       implicit type conversion.
-		* @details     only enabled for scalar unit types.
+		* @brief       explicit conversion to underlying_type reference.
+		* @details     only enabled for non-dimensionless unit types.
 		*/
-		template<class Ty, std::enable_if_t<std::is_arithmetic<Ty>::value, int> = 0>
+		template<class Ty, std::enable_if_t<!traits::is_dimensionless_unit<Units>::value && std::is_same<Ty, underlying_type>::value, int> = 0>
 		inline constexpr explicit operator Ty&() noexcept
 		{
 			return static_cast<Ty&>((*this)());
