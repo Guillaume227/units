@@ -774,7 +774,7 @@ namespace units
 		typedef base_unit<detail::meter_ratio<0>,	std::ratio<0>,	std::ratio<0>,	std::ratio<0>,	std::ratio<0>,	std::ratio<0>,	std::ratio<0>,	std::ratio<1>>						luminous_intensity_unit; 		///< Represents an SI base unit of luminous intensity
 
 		// SI DERIVED UNIT TYPES
-		//					METERS			KILOGRAMS		SECONDS			RADIANS			AMPERES			KELVIN			MOLE			CANDELA			BYTE		---		CATEGORY	
+		//					 METERS			        KILOGRAMS		SECONDS			RADIANS			AMPERES			KELVIN			MOLE			CANDELA			BYTE		---		CATEGORY
 		typedef base_unit<detail::meter_ratio<0>,	std::ratio<0>,	std::ratio<0>,	std::ratio<2>,	std::ratio<0>,	std::ratio<0>,	std::ratio<0>,	std::ratio<0>>						solid_angle_unit;				///< Represents an SI derived unit of solid angle
 		typedef base_unit<detail::meter_ratio<0>,	std::ratio<0>,	std::ratio<-1>>																										frequency_unit;					///< Represents an SI derived unit of frequency
 		typedef base_unit<detail::meter_ratio<1>,	std::ratio<0>,	std::ratio<-1>>																										velocity_unit;					///< Represents an SI derived unit of velocity
