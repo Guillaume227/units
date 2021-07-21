@@ -2859,7 +2859,7 @@ namespace units
 		inline constexpr decibel_scale(decibel_scale&&) = default;
 		inline decibel_scale& operator=(decibel_scale&&) = default;
 #endif
-		inline constexpr decibel_scale(const T value) noexcept : m_value(std::pow(10, value / 10)) {}
+		inline constexpr decibel_scale(const T value) noexcept : m_value(std::pow(10., value / 10)) {}
 		template<class... Args>
 		inline constexpr decibel_scale(const T value, std::true_type, Args&&...) noexcept : m_value(value) {}
 		inline constexpr T operator()() const noexcept { return 10 * std::log10(m_value); }
