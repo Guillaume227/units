@@ -74,6 +74,7 @@
 //--------------------
 
 #include <chrono>
+#include <cstddef>
 #include <ratio>
 #include <type_traits>
 #include <cstdint>
@@ -200,7 +201,7 @@ namespace units
  /**
   * @def		UNIT_ADD_NAME(namespaceName,nameSingular,abbreviation)
   * @brief		Macro for generating constexpr names/abbreviations for units.
-  * @details	The macro generates names for units. E.g. name() of 1_m would be "meter", and 
+  * @details	The macro generates names for units. E.g. name() of 1_m would be "meter", and
   *				abbreviation would be "m".
   * @param		namespaceName namespace in which the new units will be encapsulated. All literal values
   *				are placed in the `units::literals` namespace.
@@ -454,7 +455,7 @@ namespace units
 
 	/**
 	 * @defgroup	UnitManipulators Unit Manipulators
-	 * @brief		Defines a series of classes used to manipulate unit types, such as `inverse<>`, `squared<>`, and metric prefixes. 
+	 * @brief		Defines a series of classes used to manipulate unit types, such as `inverse<>`, `squared<>`, and metric prefixes.
 	 *				Unit manipulators can be chained together, e.g. `inverse<squared<pico<time::seconds>>>` to
 	 *				represent picoseconds^-2.
 	 */
@@ -591,8 +592,8 @@ namespace units
 	template<bool... Args>
 	struct all_true : std::is_same<units::bool_pack<true, Args...>, units::bool_pack<Args..., true>> {};
 	/** @endcond */	// DOXYGEN IGNORE
-	
-	/** 
+
+	/**
 	 * @brief namespace representing type traits which can access the properties of types provided by the units library.
 	 */
 	namespace traits
@@ -601,8 +602,8 @@ namespace units
 		/**
 		 * @ingroup		TypeTraits
 		 * @brief		Traits class defining the properties of units.
-		 * @details		The units library determines certain properties of the units passed to 
-		 *				them and what they represent by using the members of the corresponding 
+		 * @details		The units library determines certain properties of the units passed to
+		 *				them and what they represent by using the members of the corresponding
 		 *				unit_traits instantiation.
 		 */
 		template<class T>
@@ -774,7 +775,7 @@ namespace units
 		typedef base_unit<detail::meter_ratio<0>,	std::ratio<0>,	std::ratio<0>,	std::ratio<0>,	std::ratio<0>,	std::ratio<0>,	std::ratio<0>,	std::ratio<1>>						luminous_intensity_unit; 		///< Represents an SI base unit of luminous intensity
 
 		// SI DERIVED UNIT TYPES
-		//					 METERS			        KILOGRAMS		SECONDS			RADIANS			AMPERES			KELVIN			MOLE			CANDELA			BYTE		---		CATEGORY
+		//					METERS			KILOGRAMS		SECONDS			RADIANS			AMPERES			KELVIN			MOLE			CANDELA			BYTE		---		CATEGORY
 		typedef base_unit<detail::meter_ratio<0>,	std::ratio<0>,	std::ratio<0>,	std::ratio<2>,	std::ratio<0>,	std::ratio<0>,	std::ratio<0>,	std::ratio<0>>						solid_angle_unit;				///< Represents an SI derived unit of solid angle
 		typedef base_unit<detail::meter_ratio<0>,	std::ratio<0>,	std::ratio<-1>>																										frequency_unit;					///< Represents an SI derived unit of frequency
 		typedef base_unit<detail::meter_ratio<1>,	std::ratio<0>,	std::ratio<-1>>																										velocity_unit;					///< Represents an SI derived unit of velocity
@@ -839,7 +840,7 @@ namespace units
 	 *				- A `std::ratio` defining the conversion factor to the base unit type. (e.g. `std::ratio<1,12>` for inches to feet)
 	 *				- A base unit that the unit is derived from (or a unit category. Must be of type `unit` or `base_unit`)
 	 *				- An exponent representing factors of PI required by the conversion. (e.g. `std::ratio<-1>` for a radians to degrees conversion)
-	 *				- a ratio representing a datum translation required for the conversion (e.g. `std::ratio<32>` for a farenheit to celsius conversion)
+	 *				- a ratio representing a datum translation required for the conversion (e.g. `std::ratio<32>` for a fahrenheit to celsius conversion)
 	 *
 	 *				Typically, a specific unit, like `meters`, would be implemented as a type alias
 	 *				of `unit`, i.e. `using meters = unit<std::ratio<1>, units::category::length_unit`, or
@@ -1517,82 +1518,101 @@ namespace units
 		}
 
 		/// convert dispatch for units which are both the same
-		template<class UnitFrom, class UnitTo, class Ratio, class PiRatio, class Translation, typename T>
-		static inline constexpr T convert(const T& value, std::true_type, std::false_type, std::false_type) noexcept
+		template<class Ratio, class PiRatio, class Translation, bool piRequired, bool translationRequired, typename T>
+		static inline constexpr T convert(const T& value, std::true_type, std::integral_constant<bool, piRequired>, std::integral_constant<bool, translationRequired>) noexcept
 		{
 			return value;
 		}
 
-		/// convert dispatch for units which are both the same
-		template<class UnitFrom, class UnitTo, class Ratio, class PiRatio, class Translation, typename T>
-		static inline constexpr T convert(const T& value, std::true_type, std::false_type, std::true_type) noexcept
+		template<std::size_t Ratio_num, std::size_t Ratio_den>
+		struct normal_convert
 		{
-			return value;
+			template<typename T>
+			inline constexpr T operator()(const T& value) const noexcept
+			{
+				return value * Ratio_num / Ratio_den;
 		}
+		};
 
-		/// convert dispatch for units which are both the same
-		template<class UnitFrom, class UnitTo, class Ratio, class PiRatio, class Translation, typename T>
-		static inline constexpr T convert(const T& value, std::true_type, std::true_type, std::false_type) noexcept
+		template<std::size_t Ratio_num>
+		struct normal_convert<Ratio_num, 1>
 		{
-			return value;
+			template<typename T>
+			inline constexpr T operator()(const T& value) const noexcept
+			{
+				return value * Ratio_num;
 		}
+		};
 
-		/// convert dispatch for units which are both the same
-		template<class UnitFrom, class UnitTo, class Ratio, class PiRatio, class Translation, typename T>
-		static inline constexpr T convert(const T& value, std::true_type, std::true_type, std::true_type) noexcept
+		template<std::size_t Ratio_den>
+		struct normal_convert<1, Ratio_den>
 		{
+			template<typename T>
+			inline constexpr T operator()(const T& value) const noexcept
+			{
+				return value / Ratio_den;
+			}
+		};
+
+		template<>
+		struct normal_convert<1, 1>
+		{
+			template<typename T>
+			inline constexpr T operator()(const T& value) const noexcept
+			{
 			return value;
 		}
+		};
 
 		/// convert dispatch for units of different types w/ no translation and no PI
-		template<class UnitFrom, class UnitTo, class Ratio, class PiRatio, class Translation, typename T>
+		template<class Ratio, class PiRatio, class Translation, typename T>
 		static inline constexpr T convert(const T& value, std::false_type, std::false_type, std::false_type) noexcept
 		{
-			return ((value * Ratio::num) / Ratio::den);
+			return normal_convert<Ratio::num, Ratio::den>{}(value);
 		}
 
 		/// convert dispatch for units of different types w/ no translation, but has PI in numerator
 		// constepxr with PI in numerator
-		template<class UnitFrom, class UnitTo, class Ratio, class PiRatio, class Translation, typename T>
+		template<class Ratio, class PiRatio, class Translation, typename T>
 		static inline constexpr
 		std::enable_if_t<(PiRatio::num / PiRatio::den >= 1 && PiRatio::num % PiRatio::den == 0), T>
 		convert(const T& value, std::false_type, std::true_type, std::false_type) noexcept
 		{
-			return ((value * pow(constants::detail::PI_VAL, PiRatio::num / PiRatio::den) * Ratio::num) / Ratio::den);
+			return normal_convert<Ratio::num, Ratio::den>{}(value) * pow(constants::detail::PI_VAL, PiRatio::num / PiRatio::den);
 		}
 
 		/// convert dispatch for units of different types w/ no translation, but has PI in denominator
 		// constexpr with PI in denominator
-		template<class UnitFrom, class UnitTo, class Ratio, class PiRatio, class Translation, typename T>
+		template<class Ratio, class PiRatio, class Translation, typename T>
 		static inline constexpr
 		std::enable_if_t<(PiRatio::num / PiRatio::den <= -1 && PiRatio::num % PiRatio::den == 0), T>
  		convert(const T& value, std::false_type, std::true_type, std::false_type) noexcept
  		{
- 			return (value * Ratio::num) / (Ratio::den * pow(constants::detail::PI_VAL, -PiRatio::num / PiRatio::den));
+ 			return normal_convert<Ratio::num, Ratio::den>{}(value) / pow(constants::detail::PI_VAL, -PiRatio::num / PiRatio::den);
  		}
 
 		/// convert dispatch for units of different types w/ no translation, but has PI in numerator
 		// Not constexpr - uses std::pow
-		template<class UnitFrom, class UnitTo, class Ratio, class PiRatio, class Translation, typename T>
+		template<class Ratio, class PiRatio, class Translation, typename T>
 		static inline // sorry, this can't be constexpr!
 		std::enable_if_t<(PiRatio::num / PiRatio::den < 1 && PiRatio::num / PiRatio::den > -1), T>
 		convert(const T& value, std::false_type, std::true_type, std::false_type) noexcept
 		{
-			return ((value * std::pow(constants::detail::PI_VAL, PiRatio::num / PiRatio::den)  * Ratio::num) / Ratio::den);
+			return normal_convert<Ratio::num, Ratio::den>{}(value) * std::pow(constants::detail::PI_VAL, PiRatio::num / PiRatio::den);
 		}
 
 		/// convert dispatch for units of different types with a translation, but no PI
-		template<class UnitFrom, class UnitTo, class Ratio, class PiRatio, class Translation, typename T>
+		template<class Ratio, class PiRatio, class Translation, typename T>
 		static inline constexpr T convert(const T& value, std::false_type, std::false_type, std::true_type) noexcept
 		{
-			return ((value * Ratio::num) / Ratio::den) + (static_cast<UNIT_LIB_DEFAULT_TYPE>(Translation::num) / Translation::den);
+			return normal_convert<Ratio::num, Ratio::den>{}(value) + (static_cast<UNIT_LIB_DEFAULT_TYPE>(Translation::num) / Translation::den);
 		}
 
 		/// convert dispatch for units of different types with a translation AND PI
-		template<class UnitFrom, class UnitTo, class Ratio, class PiRatio, class Translation, typename T>
-		static inline constexpr T convert(const T& value, const std::false_type, const std::true_type, const std::true_type) noexcept
+		template<class Ratio, class PiRatio, class Translation, typename T>
+		static inline constexpr T convert(const T& value, std::false_type isSame, std::true_type piRequired, std::true_type) noexcept
 		{
-			return ((value * std::pow(constants::detail::PI_VAL, PiRatio::num / PiRatio::den) * Ratio::num) / Ratio::den) + (static_cast<UNIT_LIB_DEFAULT_TYPE>(Translation::num) / Translation::den);
+			return convert<Ratio, PiRatio, Translation>(value, isSame, piRequired, std::false_type()) + (static_cast<UNIT_LIB_DEFAULT_TYPE>(Translation::num) / Translation::den);
 		}
 	}
 	/** @endcond */	// END DOXYGEN IGNORE
@@ -1627,7 +1647,7 @@ namespace units
 		using piRequired = std::integral_constant<bool, !(std::is_same<std::ratio<0>, PiRatio>::value)>;
 		using translationRequired = std::integral_constant<bool, !(std::is_same<std::ratio<0>, Translation>::value)>;
 
-		return units::detail::convert<UnitFrom, UnitTo, Ratio, PiRatio, Translation, T>
+		return units::detail::convert<Ratio, PiRatio, Translation>
 			(value, isSame{}, piRequired{}, translationRequired{});
 	}
 
@@ -2263,7 +2283,7 @@ namespace units
 #endif
 
 	template<class Units, typename T, template<typename> class NonLinearScale, typename RhsType>
-	inline unit_t<Units, T, NonLinearScale>& operator+=(unit_t<Units, T, NonLinearScale>& lhs, const RhsType& rhs) noexcept
+	inline constexpr unit_t<Units, T, NonLinearScale>& operator+=(unit_t<Units, T, NonLinearScale>& lhs, const RhsType& rhs) noexcept
 	{
 		static_assert(traits::is_convertible_unit_t<unit_t<Units, T, NonLinearScale>, RhsType>::value ||
 			(traits::is_dimensionless_unit<decltype(lhs)>::value && std::is_arithmetic<RhsType>::value), 
@@ -2274,7 +2294,7 @@ namespace units
 	}
 
 	template<class Units, typename T, template<typename> class NonLinearScale, typename RhsType>
-	inline unit_t<Units, T, NonLinearScale>& operator-=(unit_t<Units, T, NonLinearScale>& lhs, const RhsType& rhs) noexcept
+	inline constexpr unit_t<Units, T, NonLinearScale>& operator-=(unit_t<Units, T, NonLinearScale>& lhs, const RhsType& rhs) noexcept
 	{
 		static_assert(traits::is_convertible_unit_t<unit_t<Units, T, NonLinearScale>, RhsType>::value ||
 			(traits::is_dimensionless_unit<decltype(lhs)>::value && std::is_arithmetic<RhsType>::value),
@@ -2285,7 +2305,7 @@ namespace units
 	}
 
 	template<class Units, typename T, template<typename> class NonLinearScale, typename RhsType>
-	inline unit_t<Units, T, NonLinearScale>& operator*=(unit_t<Units, T, NonLinearScale>& lhs, const RhsType& rhs) noexcept
+	inline constexpr unit_t<Units, T, NonLinearScale>& operator*=(unit_t<Units, T, NonLinearScale>& lhs, const RhsType& rhs) noexcept
 	{
 		static_assert((traits::is_dimensionless_unit<RhsType>::value || std::is_arithmetic<RhsType>::value),
 			"right-hand side parameter must be dimensionless.");
@@ -2295,7 +2315,7 @@ namespace units
 	}
 
 	template<class Units, typename T, template<typename> class NonLinearScale, typename RhsType>
-	inline unit_t<Units, T, NonLinearScale>& operator/=(unit_t<Units, T, NonLinearScale>& lhs, const RhsType& rhs) noexcept
+	inline constexpr unit_t<Units, T, NonLinearScale>& operator/=(unit_t<Units, T, NonLinearScale>& lhs, const RhsType& rhs) noexcept
 	{
 		static_assert((traits::is_dimensionless_unit<RhsType>::value || std::is_arithmetic<RhsType>::value),
 			"right-hand side parameter must be dimensionless.");
@@ -2310,14 +2330,14 @@ namespace units
 
 	// unary addition: +T
 	template<class Units, typename T, template<typename> class NonLinearScale>
-	inline unit_t<Units, T, NonLinearScale> operator+(const unit_t<Units, T, NonLinearScale>& u) noexcept
+	inline constexpr unit_t<Units, T, NonLinearScale> operator+(const unit_t<Units, T, NonLinearScale>& u) noexcept
 	{
 		return u;
 	}
 
 	// prefix increment: ++T
 	template<class Units, typename T, template<typename> class NonLinearScale>
-	inline unit_t<Units, T, NonLinearScale>& operator++(unit_t<Units, T, NonLinearScale>& u) noexcept
+	inline constexpr unit_t<Units, T, NonLinearScale>& operator++(unit_t<Units, T, NonLinearScale>& u) noexcept
 	{
 		u = unit_t<Units, T, NonLinearScale>(u() + 1);
 		return u;
@@ -2325,7 +2345,7 @@ namespace units
 
 	// postfix increment: T++
 	template<class Units, typename T, template<typename> class NonLinearScale>
-	inline unit_t<Units, T, NonLinearScale> operator++(unit_t<Units, T, NonLinearScale>& u, int) noexcept
+	inline constexpr unit_t<Units, T, NonLinearScale> operator++(unit_t<Units, T, NonLinearScale>& u, int) noexcept
 	{
 		auto ret = u;
 		u = unit_t<Units, T, NonLinearScale>(u() + 1);
@@ -2334,14 +2354,14 @@ namespace units
 
 	// unary addition: -T
 	template<class Units, typename T, template<typename> class NonLinearScale>
-	inline unit_t<Units, T, NonLinearScale> operator-(const unit_t<Units, T, NonLinearScale>& u) noexcept
+	inline constexpr unit_t<Units, T, NonLinearScale> operator-(const unit_t<Units, T, NonLinearScale>& u) noexcept
 	{
 		return unit_t<Units, T, NonLinearScale>(-u());
 	}
 
 	// prefix increment: --T
 	template<class Units, typename T, template<typename> class NonLinearScale>
-	inline unit_t<Units, T, NonLinearScale>& operator--(unit_t<Units, T, NonLinearScale>& u) noexcept
+	inline constexpr unit_t<Units, T, NonLinearScale>& operator--(unit_t<Units, T, NonLinearScale>& u) noexcept
 	{
 		u = unit_t<Units, T, NonLinearScale>(u() - 1);
 		return u;
@@ -2349,7 +2369,7 @@ namespace units
 
 	// postfix increment: T--
 	template<class Units, typename T, template<typename> class NonLinearScale>
-	inline unit_t<Units, T, NonLinearScale> operator--(unit_t<Units, T, NonLinearScale>& u, int) noexcept
+	inline constexpr unit_t<Units, T, NonLinearScale> operator--(unit_t<Units, T, NonLinearScale>& u, int) noexcept
 	{
 		auto ret = u;
 		u = unit_t<Units, T, NonLinearScale>(u() - 1);
@@ -2758,13 +2778,29 @@ namespace units
 		/// recursive exponential implementation
 		template <int N, class U> struct power_of_unit
 		{
-			typedef typename units::detail::unit_multiply<U, typename power_of_unit<N - 1, U>::type> type;
+			template<bool isPos, int V> struct power_of_unit_impl;
+
+			template<int V> struct power_of_unit_impl<true, V>
+			{
+				typedef units::detail::unit_multiply<U, typename power_of_unit<N - 1, U>::type> type;
+		};
+
+			template<int V> struct power_of_unit_impl<false, V>
+			{
+				typedef units::inverse<typename power_of_unit<-N, U>::type> type;
+			};
+
+			typedef typename power_of_unit_impl<(N > 0), N>::type type;
 		};
 
 		/// End recursion
 		template <class U> struct power_of_unit<1, U>
 		{
 			typedef U type;
+		};
+		template <class U> struct power_of_unit<0, U>
+		{
+			typedef units::dimensionless::dimensionless type;
 		};
 	}
 	/** @endcond */	// END DOXYGEN IGNORE
@@ -4840,6 +4876,8 @@ namespace std
 		{
 			return units::unit_t<Units, T, NonLinearScale>(std::numeric_limits<T>::lowest());
 		}
+		static constexpr bool is_integer = std::numeric_limits<T>::is_integer;
+		static constexpr bool is_signed = std::numeric_limits<T>::is_signed;
 	};
 }
 
