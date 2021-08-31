@@ -2233,53 +2233,62 @@ namespace units
 		using BaseUnits = unit<std::ratio<1>, typename traits::unit_traits<Units>::base_unit_type>;
 		os << convert<Units, BaseUnits>(obj());
 
-		if (traits::unit_traits<Units>::base_unit_type::meter_ratio::num != 0) { os << " m"; }
-		if (traits::unit_traits<Units>::base_unit_type::meter_ratio::num != 0 && 
+		if constexpr (traits::unit_traits<Units>::base_unit_type::meter_ratio::num != 0) {os << " m"; }
+		if constexpr (traits::unit_traits<Units>::base_unit_type::meter_ratio::num != 0 && 
 			traits::unit_traits<Units>::base_unit_type::meter_ratio::num != 1) { os << "^" << traits::unit_traits<Units>::base_unit_type::meter_ratio::num; }
-		if (traits::unit_traits<Units>::base_unit_type::meter_ratio::den != 1) { os << "/"   << traits::unit_traits<Units>::base_unit_type::meter_ratio::den; }
+		if constexpr (traits::unit_traits<Units>::base_unit_type::meter_ratio::den != 1) { os << "/" << traits::unit_traits<Units>::base_unit_type::meter_ratio::den; }
 
-		if (traits::unit_traits<Units>::base_unit_type::kilogram_ratio::num != 0) { os << " kg"; }
-		if (traits::unit_traits<Units>::base_unit_type::kilogram_ratio::num != 0 &&
+		if constexpr (traits::unit_traits<Units>::base_unit_type::kilogram_ratio::num != 0) { os << " kg"; }
+		if constexpr (traits::unit_traits<Units>::base_unit_type::kilogram_ratio::num != 0 &&
 			traits::unit_traits<Units>::base_unit_type::kilogram_ratio::num != 1) { os << "^" << traits::unit_traits<Units>::base_unit_type::kilogram_ratio::num; }
-		if (traits::unit_traits<Units>::base_unit_type::kilogram_ratio::den != 1) { os << "/" << traits::unit_traits<Units>::base_unit_type::kilogram_ratio::den; }
+		if constexpr (traits::unit_traits<Units>::base_unit_type::kilogram_ratio::den != 1) { os << "/" << traits::unit_traits<Units>::base_unit_type::kilogram_ratio::den; }
 
-		if (traits::unit_traits<Units>::base_unit_type::second_ratio::num != 0) { os << " s"; }
-		if (traits::unit_traits<Units>::base_unit_type::second_ratio::num != 0 &&
+		if constexpr (traits::unit_traits<Units>::base_unit_type::second_ratio::num != 0) { os << " s"; }
+		if constexpr (traits::unit_traits<Units>::base_unit_type::second_ratio::num != 0 &&
 			traits::unit_traits<Units>::base_unit_type::second_ratio::num != 1) { os << "^" << traits::unit_traits<Units>::base_unit_type::second_ratio::num; }
-		if (traits::unit_traits<Units>::base_unit_type::second_ratio::den != 1) { os << "/" << traits::unit_traits<Units>::base_unit_type::second_ratio::den; }
+		if constexpr (traits::unit_traits<Units>::base_unit_type::second_ratio::den != 1) { os << "/" << traits::unit_traits<Units>::base_unit_type::second_ratio::den; }
 
-		if (traits::unit_traits<Units>::base_unit_type::ampere_ratio::num != 0) { os << " A"; }
-		if (traits::unit_traits<Units>::base_unit_type::ampere_ratio::num != 0 &&
+		if constexpr (traits::unit_traits<Units>::base_unit_type::ampere_ratio::num != 0) { os << " A"; }
+		if constexpr (traits::unit_traits<Units>::base_unit_type::ampere_ratio::num != 0 &&
 			traits::unit_traits<Units>::base_unit_type::ampere_ratio::num != 1) { os << "^" << traits::unit_traits<Units>::base_unit_type::ampere_ratio::num; }
-		if (traits::unit_traits<Units>::base_unit_type::ampere_ratio::den != 1) { os << "/" << traits::unit_traits<Units>::base_unit_type::ampere_ratio::den; }
+		if constexpr (traits::unit_traits<Units>::base_unit_type::ampere_ratio::den != 1) { os << "/" << traits::unit_traits<Units>::base_unit_type::ampere_ratio::den; }
 
-		if (traits::unit_traits<Units>::base_unit_type::kelvin_ratio::num != 0) { os << " K"; }
-		if (traits::unit_traits<Units>::base_unit_type::kelvin_ratio::num != 0 &&
+		if constexpr (traits::unit_traits<Units>::base_unit_type::kelvin_ratio::num != 0) { os << " K"; }
+		if constexpr (traits::unit_traits<Units>::base_unit_type::kelvin_ratio::num != 0 &&
 			traits::unit_traits<Units>::base_unit_type::kelvin_ratio::num != 1) { os << "^" << traits::unit_traits<Units>::base_unit_type::kelvin_ratio::num; }
-		if (traits::unit_traits<Units>::base_unit_type::kelvin_ratio::den != 1) { os << "/" << traits::unit_traits<Units>::base_unit_type::kelvin_ratio::den; }
+		if constexpr (traits::unit_traits<Units>::base_unit_type::kelvin_ratio::den != 1) { os << "/" << traits::unit_traits<Units>::base_unit_type::kelvin_ratio::den; }
 
-		if (traits::unit_traits<Units>::base_unit_type::mole_ratio::num != 0) { os << " mol"; }
-		if (traits::unit_traits<Units>::base_unit_type::mole_ratio::num != 0 && 
+		if constexpr (traits::unit_traits<Units>::base_unit_type::mole_ratio::num != 0) { os << " mol"; }
+		if constexpr (traits::unit_traits<Units>::base_unit_type::mole_ratio::num != 0 && 
 			traits::unit_traits<Units>::base_unit_type::mole_ratio::num != 1) { os << "^" << traits::unit_traits<Units>::base_unit_type::mole_ratio::num; }
-		if (traits::unit_traits<Units>::base_unit_type::mole_ratio::den != 1) { os << "/" << traits::unit_traits<Units>::base_unit_type::mole_ratio::den; }
+		if constexpr (traits::unit_traits<Units>::base_unit_type::mole_ratio::den != 1) { os << "/" << traits::unit_traits<Units>::base_unit_type::mole_ratio::den; }
 
-		if (traits::unit_traits<Units>::base_unit_type::candela_ratio::num != 0) { os << " cd"; }
-		if (traits::unit_traits<Units>::base_unit_type::candela_ratio::num != 0 &&
+		if constexpr (traits::unit_traits<Units>::base_unit_type::candela_ratio::num != 0) { os << " cd"; }
+		if constexpr (traits::unit_traits<Units>::base_unit_type::candela_ratio::num != 0 &&
 			traits::unit_traits<Units>::base_unit_type::candela_ratio::num != 1) { os << "^" << traits::unit_traits<Units>::base_unit_type::candela_ratio::num; }
-		if (traits::unit_traits<Units>::base_unit_type::candela_ratio::den != 1) { os << "/" << traits::unit_traits<Units>::base_unit_type::candela_ratio::den; }
+		if constexpr (traits::unit_traits<Units>::base_unit_type::candela_ratio::den != 1) { os << "/" << traits::unit_traits<Units>::base_unit_type::candela_ratio::den; }
 
-		if (traits::unit_traits<Units>::base_unit_type::radian_ratio::num != 0) { os << " rad"; }
-		if (traits::unit_traits<Units>::base_unit_type::radian_ratio::num != 0 &&
+		if constexpr (traits::unit_traits<Units>::base_unit_type::radian_ratio::num != 0) { os << " rad"; }
+		if constexpr (traits::unit_traits<Units>::base_unit_type::radian_ratio::num != 0 &&
 			traits::unit_traits<Units>::base_unit_type::radian_ratio::num != 1) { os << "^" << traits::unit_traits<Units>::base_unit_type::radian_ratio::num; }
-		if (traits::unit_traits<Units>::base_unit_type::radian_ratio::den != 1) { os << "/" << traits::unit_traits<Units>::base_unit_type::radian_ratio::den; }
+		if constexpr (traits::unit_traits<Units>::base_unit_type::radian_ratio::den != 1) { os << "/" << traits::unit_traits<Units>::base_unit_type::radian_ratio::den; }
 
-		if (traits::unit_traits<Units>::base_unit_type::byte_ratio::num != 0) { os << " b"; }
-		if (traits::unit_traits<Units>::base_unit_type::byte_ratio::num != 0 &&
+		if constexpr (traits::unit_traits<Units>::base_unit_type::byte_ratio::num != 0) { os << " b"; }
+		if constexpr (traits::unit_traits<Units>::base_unit_type::byte_ratio::num != 0 &&
 			traits::unit_traits<Units>::base_unit_type::byte_ratio::num != 1) { os << "^" << traits::unit_traits<Units>::base_unit_type::byte_ratio::num; }
-		if (traits::unit_traits<Units>::base_unit_type::byte_ratio::den != 1) { os << "/" << traits::unit_traits<Units>::base_unit_type::byte_ratio::den; }
+		if constexpr (traits::unit_traits<Units>::base_unit_type::byte_ratio::den != 1) { os << "/" << traits::unit_traits<Units>::base_unit_type::byte_ratio::den; }
 
 		return os;
 	}
+
+	// fallback method for ephemeral, derived types
+	template <class Units, typename T, template <typename> class NonLinearScale>
+	inline std::string to_string(unit_t<Units, T, NonLinearScale> const& val) noexcept {
+		std::ostringstream oss;
+		oss << val;
+		return oss.str();
+	}
+
 #endif
 
 	template<class Units, typename T, template<typename> class NonLinearScale, typename RhsType>
