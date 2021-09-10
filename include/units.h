@@ -83,6 +83,7 @@
 
 #if !defined(UNIT_LIB_DISABLE_IOSTREAM)
 	#include <iostream>
+	#include <sstream>
 	#include <string>
 	#include <locale>
 
