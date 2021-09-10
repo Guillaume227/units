@@ -3032,7 +3032,7 @@ namespace units
 	 * @note		This is intentionally identical in concept to a `std::ratio`.
 	 *
 	 */
-	template<typename Units, std::uintmax_t Num, std::uintmax_t Denom = 1>
+	template<typename Units, std::intmax_t Num, std::intmax_t Denom = 1>
 	struct unit_value_t : units::detail::_unit_value_t<Units>
 	{
 		typedef Units unit_type;
