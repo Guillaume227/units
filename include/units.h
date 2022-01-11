@@ -765,15 +765,15 @@ namespace units
 		typedef base_unit<> dimensionless_unit;	///< Represents a quantity with no dimension.
 
 		// SI BASE UNIT TYPES
-		//					METERS			KILOGRAMS		SECONDS			RADIANS			AMPERES			KELVIN			MOLE			CANDELA			BYTE		---		CATEGORY
-		typedef base_unit<detail::meter_ratio<1>>																																		length_unit;			 		///< Represents an SI base unit of length
-		typedef base_unit<detail::meter_ratio<0>,	std::ratio<1>>																														mass_unit;				 		///< Represents an SI base unit of mass
-		typedef base_unit<detail::meter_ratio<0>,	std::ratio<0>,	std::ratio<1>>																										time_unit;				 		///< Represents an SI base unit of time
-		typedef base_unit<detail::meter_ratio<0>,	std::ratio<0>,	std::ratio<0>,	std::ratio<1>>																						angle_unit;				 		///< Represents an SI base unit of angle
-		typedef base_unit<detail::meter_ratio<0>,	std::ratio<0>,	std::ratio<0>,	std::ratio<0>,	std::ratio<1>>																		current_unit;			 		///< Represents an SI base unit of current
-		typedef base_unit<detail::meter_ratio<0>,	std::ratio<0>,	std::ratio<0>,	std::ratio<0>,	std::ratio<0>,	std::ratio<1>>														temperature_unit;		 		///< Represents an SI base unit of temperature
-		typedef base_unit<detail::meter_ratio<0>,	std::ratio<0>,	std::ratio<0>,	std::ratio<0>,	std::ratio<0>,	std::ratio<0>,	std::ratio<1>>										substance_unit;			 		///< Represents an SI base unit of amount of substance
-		typedef base_unit<detail::meter_ratio<0>,	std::ratio<0>,	std::ratio<0>,	std::ratio<0>,	std::ratio<0>,	std::ratio<0>,	std::ratio<0>,	std::ratio<1>>						luminous_intensity_unit; 		///< Represents an SI base unit of luminous intensity
+                //					METERS			KILOGRAMS		SECONDS			RADIANS			AMPERES			KELVIN			MOLE			CANDELA			BYTE		---		CATEGORY
+                typedef base_unit<detail::meter_ratio<1>>																																		length_unit;			 		///< Represents an SI base unit of length
+                typedef base_unit<detail::meter_ratio<0>,	std::ratio<1>>																														mass_unit;				 		///< Represents an SI base unit of mass
+                typedef base_unit<detail::meter_ratio<0>,	std::ratio<0>,	std::ratio<1>>																										time_unit;				 		///< Represents an SI base unit of time
+                typedef base_unit<detail::meter_ratio<0>,	std::ratio<0>,	std::ratio<0>,	std::ratio<1>>																						angle_unit;				 		///< Represents an SI base unit of angle
+                typedef base_unit<detail::meter_ratio<0>,	std::ratio<0>,	std::ratio<0>,	std::ratio<0>,	std::ratio<1>>																		current_unit;			 		///< Represents an SI base unit of current
+                typedef base_unit<detail::meter_ratio<0>,	std::ratio<0>,	std::ratio<0>,	std::ratio<0>,	std::ratio<0>,	std::ratio<1>>														temperature_unit;		 		///< Represents an SI base unit of temperature
+                typedef base_unit<detail::meter_ratio<0>,	std::ratio<0>,	std::ratio<0>,	std::ratio<0>,	std::ratio<0>,	std::ratio<0>,	std::ratio<1>>										substance_unit;			 		///< Represents an SI base unit of amount of substance
+                typedef base_unit<detail::meter_ratio<0>,	std::ratio<0>,	std::ratio<0>,	std::ratio<0>,	std::ratio<0>,	std::ratio<0>,	std::ratio<0>,	std::ratio<1>>						luminous_intensity_unit; 		///< Represents an SI base unit of luminous intensity
 
 		// SI DERIVED UNIT TYPES
 		//					METERS			KILOGRAMS		SECONDS			RADIANS			AMPERES			KELVIN			MOLE			CANDELA			BYTE		---		CATEGORY
@@ -2142,26 +2142,14 @@ namespace units
 			return static_cast<Ty>(units::convert<Units, unit<std::ratio<1>, units::category::scalar_unit>>((*this)()));
 		}
 
-        /**
-         * @brief       implicit conversion to underlying_type reference.
-         * @details     only enabled for scalar unit types.
-         */
-        template<class Ty, std::enable_if_t<traits::is_dimensionless_unit<Units>::value && std::is_same<Ty, underlying_type>::value, int> = 0>
-        inline constexpr operator Ty&() noexcept
-        {
-            // this conversion also resolves any PI exponents, by converting from a non-zero PI ratio to a zero-pi ratio.
-            return static_cast<Ty&>((*this)());
-        }
-
-		/**
-		* @brief       explicit conversion to underlying_type reference.
-		* @details     only enabled for non-dimensionless unit types.
-		*/
-		template<class Ty, std::enable_if_t<!traits::is_dimensionless_unit<Units>::value && std::is_same<Ty, underlying_type>::value, int> = 0>
-		inline constexpr explicit operator Ty&() noexcept
-		{
-			return static_cast<Ty&>((*this)());
-		}
+                /**
+                 * @brief       implicit conversion to underlying_type reference.
+                 */
+                inline constexpr underlying_type& as_underlying_ref() noexcept
+                {
+                    // this conversion also resolves any PI exponents, by converting from a non-zero PI ratio to a zero-pi ratio.
+                    return static_cast<underlying_type&>((*this)());
+                }
 
 		/**
 		 * @brief		explicit type conversion.
@@ -4196,22 +4184,23 @@ namespace units
 		 */
 		using PI = unit<std::ratio<1>, dimensionless::scalar, std::ratio<1>>;
 
-		static constexpr const unit_t<PI>																											pi(1);											///< Ratio of a circle's circumference to its diameter.
-		static constexpr const velocity::meters_per_second_t																						c(299792458.0);									///< Speed of light in vacuum.
-		static constexpr const unit_t<compound_unit<cubed<length::meters>, inverse<mass::kilogram>, inverse<squared<time::seconds>>>>				G(6.67408e-11);									///< Newtonian constant of gravitation.
-		static constexpr const unit_t<compound_unit<energy::joule, time::seconds>>																	h(6.626070040e-34);								///< Planck constant.
-		static constexpr const unit_t<compound_unit<force::newtons, inverse<squared<current::ampere>>>>												mu0(pi * 4.0e-7 * force::newton_t(1) / units::math::cpow<2>(current::ampere_t(1)));										///< vacuum permeability.
-		static constexpr const unit_t<compound_unit<capacitance::farad, inverse<length::meter>>>													epsilon0(1.0 / (mu0 * math::cpow<2>(c)));		///< vacuum permitivity.
-		static constexpr const impedance::ohm_t																										Z0(mu0 * c);									///< characteristic impedance of vacuum.
-		static constexpr const unit_t<compound_unit<force::newtons, area::square_meter, inverse<squared<charge::coulomb>>>>							k_e(1.0 / (4 * pi * epsilon0));					///< Coulomb's constant.
-		static constexpr const charge::coulomb_t																									e(1.6021766208e-19);							///< elementary charge.
-		static constexpr const mass::kilogram_t																										m_e(9.10938356e-31);							///< electron mass.
-		static constexpr const mass::kilogram_t																										m_p(1.672621898e-27);							///< proton mass.
-		static constexpr const unit_t<compound_unit<energy::joules, inverse<magnetic_field_strength::tesla>>>										mu_B(e * h / (4 * pi *m_e));					///< Bohr magneton.
-		static constexpr const unit_t<inverse<substance::mol>>																						N_A(6.022140857e23);							///< Avagadro's Number.
-		static constexpr const unit_t<compound_unit<energy::joules, inverse<temperature::kelvin>, inverse<substance::moles>>>						R(8.3144598);									///< Gas constant.
-		static constexpr const unit_t<compound_unit<energy::joules, inverse<temperature::kelvin>>>													k_B(R / N_A);									///< Boltzmann constant.
-		static constexpr const unit_t<compound_unit<charge::coulomb, inverse<substance::mol>>>														F(N_A * e);										///< Faraday constant.
+		static constexpr const unit_t<PI>												pi(1);			///< Ratio of a circle's circumference to its diameter.
+		static constexpr const velocity::meters_per_second_t										c(299792458.0);			///< Speed of light in vacuum.
+		static constexpr const unit_t<compound_unit<cubed<length::meters>, inverse<mass::kilogram>, inverse<squared<time::seconds>>>>	G(6.67408e-11);			///< Newtonian constant of gravitation.
+		static constexpr const unit_t<compound_unit<energy::joule, time::seconds>>							h(6.626070040e-34);		///< Planck constant.
+		static constexpr const unit_t<compound_unit<force::newtons, inverse<squared<current::ampere>>>>					mu0(pi * 4.0e-7 * force::newton_t(1) / units::math::cpow<2>(current::ampere_t(1))); ///< vacuum permeability.
+		static constexpr const unit_t<compound_unit<capacitance::farad, inverse<length::meter>>>					epsilon0(1.0 / (mu0 * math::cpow<2>(c)));		///< vacuum permitivity.
+		static constexpr const impedance::ohm_t												Z0(mu0 * c);			///< characteristic impedance of vacuum.
+		static constexpr const unit_t<compound_unit<force::newtons, area::square_meter, inverse<squared<charge::coulomb>>>>		k_e(1.0 / (4 * pi * epsilon0));	///< Coulomb's constant.
+		static constexpr const charge::coulomb_t											e(1.6021766208e-19);		///< elementary charge.
+		static constexpr const mass::kilogram_t												m_e(9.10938356e-31);		///< electron mass.
+		static constexpr const mass::kilogram_t												m_p(1.672621898e-27);		///< proton mass.
+		static constexpr const unit_t<compound_unit<energy::joules, inverse<magnetic_field_strength::tesla>>>				mu_B(e * h / (4 * pi *m_e));	///< Bohr magneton.
+		static constexpr const unit_t<inverse<substance::mol>>										N_A(6.022140857e23);		///< Avagadro's Number.
+		static constexpr const unit_t<compound_unit<energy::joules, inverse<temperature::kelvin>, inverse<substance::moles>>>		R(8.3144598);			///< Gas constant.
+		static constexpr const unit_t<compound_unit<energy::joules, inverse<temperature::kelvin>>>					k_B(R / N_A);			///< Boltzmann constant.
+		static constexpr const unit_t<compound_unit<charge::coulomb, inverse<substance::mol>>>						F(N_A * e);			///< Faraday constant.
+                // gcc complains about constexpr pow
 		//static constexpr const unit_t<compound_unit<power::watts, inverse<area::square_meters>, inverse<squared<squared<temperature::kelvin>>>>>	sigma((2 * math::cpow<5>(pi) * math::cpow<4>(R)) / (15 * math::cpow<3>(h) * math::cpow<2>(c) * math::cpow<4>(N_A)));	///< Stefan-Boltzmann constant.
 		/** @} */
 	}
