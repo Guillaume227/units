@@ -2142,16 +2142,24 @@ namespace units
 			return static_cast<Ty>(units::convert<Units, unit<std::ratio<1>, units::category::scalar_unit>>((*this)()));
 		}
 
-                /**
-                 * @brief       implicit conversion to underlying_type reference.
-                 */
-                inline constexpr underlying_type& as_underlying_ref() noexcept
-                {
-                    // this conversion also resolves any PI exponents, by converting from a non-zero PI ratio to a zero-pi ratio.
-                    return static_cast<underlying_type&>((*this)());
-                }
+        /**
+         * @brief conversion to underlying_type reference.
+         */
+        inline constexpr underlying_type& as_underlying_ref() noexcept
+        {
+            // this conversion also resolves any PI exponents, by converting from a non-zero PI ratio to a zero-pi ratio.
+            return static_cast<underlying_type&>((*this)());
+        }
 
-		/**
+        /**
+         * @brief conversion to underlying_type reference.
+         */
+        inline constexpr underlying_type as_underlying() const noexcept
+        {
+            return *this();
+        }
+
+        /**
 		 * @brief		explicit type conversion.
 		 * @details		only enabled for non-dimensionless unit types.
 		 */
@@ -2161,7 +2169,7 @@ namespace units
 			return static_cast<Ty>((*this)());
 		}
 
-		/**
+        /**
 		 * @brief		chrono implicit type conversion.
 		 * @details		only enabled for time unit types.
 		 */
