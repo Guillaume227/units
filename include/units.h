@@ -2156,7 +2156,7 @@ namespace units
          */
         inline constexpr underlying_type as_underlying() const noexcept
         {
-            return *this();
+            return (*this)();
         }
 
         /**
