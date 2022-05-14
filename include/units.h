@@ -95,6 +95,7 @@
 	{
 		namespace detail
 		{
+            constexpr char unit_separator = '_';
 			template <typename T> std::string to_string(const T& t)
 			{
 				std::string str{ std::to_string(t) };
@@ -185,21 +186,32 @@ namespace units
 #if defined(UNIT_LIB_DISABLE_IOSTREAM)
 	#define UNIT_ADD_IO(namespaceName, nameSingular, abbrev)
 #else
-	#define UNIT_ADD_IO(namespaceName, nameSingular, abbrev)\
-	namespace namespaceName\
-	{\
-		inline std::ostream& operator<<(std::ostream& os, const nameSingular ## _t& obj) \
-		{\
-			os << obj() << " "#abbrev; return os; \
-		}\
-		inline std::string to_string(const nameSingular ## _t& obj)\
-		{\
-			return units::detail::to_string(obj()) + std::string(" "#abbrev);\
-		}\
-	}
+#define UNIT_ADD_IO(namespaceName, nameSingular, abbrev)                           \
+  namespace namespaceName {                                                        \
+  inline std::ostream& operator<<(std::ostream& os, const nameSingular##_t& obj) { \
+    os << obj() << "_" #abbrev;                                                    \
+    return os;                                                                     \
+  }                                                                                \
+  inline std::string to_string(const nameSingular##_t& obj) {                      \
+    return units::detail::to_string(obj()) +                                       \
+          std::string(1, units::detail::unit_separator) + #abbrev;                 \
+  }                                                                                \
+  inline bool from_string(nameSingular##_t& obj, std::string_view val_str) {       \
+    auto last_space = val_str.find_last_of(units::detail::unit_separator);         \
+    if (last_space == std::string::npos) { return false; }                         \
+    auto unit_suffix = val_str.substr(last_space + 1);                             \
+                                                                                   \
+    if (unit_suffix != #abbrev) {                                                  \
+      return false;                                                                \
+    }                                                                              \
+                                                                                   \
+    obj.as_underlying_ref() = std::stof(val_str.substr(0, last_space).data());     \
+    return true;                                                                   \
+  }                                                                                \
+  }
 #endif
 
- /**
+/**
   * @def		UNIT_ADD_NAME(namespaceName,nameSingular,abbreviation)
   * @brief		Macro for generating constexpr names/abbreviations for units.
   * @details	The macro generates names for units. E.g. name() of 1_m would be "meter", and
@@ -2148,7 +2160,7 @@ namespace units
         inline constexpr underlying_type& as_underlying_ref() noexcept
         {
             // this conversion also resolves any PI exponents, by converting from a non-zero PI ratio to a zero-pi ratio.
-            return static_cast<underlying_type&>((*this)());
+            return m_value;
         }
 
         /**
@@ -2156,7 +2168,7 @@ namespace units
          */
         inline constexpr underlying_type as_underlying() const noexcept
         {
-            return (*this)();
+            return m_value;
         }
 
         /**
@@ -2224,59 +2236,63 @@ namespace units
 	}
 
 #if !defined(UNIT_LIB_DISABLE_IOSTREAM)
-	template<class Units, typename T, template<typename> class NonLinearScale>
-	inline std::ostream& operator<<(std::ostream& os, const unit_t<Units, T, NonLinearScale>& obj) noexcept
+	template<class Units>
+	constexpr inline std::ostream& abbreviation(std::ostream& os) noexcept
 	{
-		using BaseUnits = unit<std::ratio<1>, typename traits::unit_traits<Units>::base_unit_type>;
-		os << convert<Units, BaseUnits>(obj());
-
-		if constexpr (traits::unit_traits<Units>::base_unit_type::meter_ratio::num != 0) {os << " m"; }
+		if constexpr (traits::unit_traits<Units>::base_unit_type::meter_ratio::num != 0) {os << "m"; }
 		if constexpr (traits::unit_traits<Units>::base_unit_type::meter_ratio::num != 0 && 
 			traits::unit_traits<Units>::base_unit_type::meter_ratio::num != 1) { os << "^" << traits::unit_traits<Units>::base_unit_type::meter_ratio::num; }
 		if constexpr (traits::unit_traits<Units>::base_unit_type::meter_ratio::den != 1) { os << "/" << traits::unit_traits<Units>::base_unit_type::meter_ratio::den; }
 
-		if constexpr (traits::unit_traits<Units>::base_unit_type::kilogram_ratio::num != 0) { os << " kg"; }
+		if constexpr (traits::unit_traits<Units>::base_unit_type::kilogram_ratio::num != 0) { os << "kg"; }
 		if constexpr (traits::unit_traits<Units>::base_unit_type::kilogram_ratio::num != 0 &&
 			traits::unit_traits<Units>::base_unit_type::kilogram_ratio::num != 1) { os << "^" << traits::unit_traits<Units>::base_unit_type::kilogram_ratio::num; }
 		if constexpr (traits::unit_traits<Units>::base_unit_type::kilogram_ratio::den != 1) { os << "/" << traits::unit_traits<Units>::base_unit_type::kilogram_ratio::den; }
 
-		if constexpr (traits::unit_traits<Units>::base_unit_type::second_ratio::num != 0) { os << " s"; }
+		if constexpr (traits::unit_traits<Units>::base_unit_type::second_ratio::num != 0) { os << "s"; }
 		if constexpr (traits::unit_traits<Units>::base_unit_type::second_ratio::num != 0 &&
 			traits::unit_traits<Units>::base_unit_type::second_ratio::num != 1) { os << "^" << traits::unit_traits<Units>::base_unit_type::second_ratio::num; }
 		if constexpr (traits::unit_traits<Units>::base_unit_type::second_ratio::den != 1) { os << "/" << traits::unit_traits<Units>::base_unit_type::second_ratio::den; }
 
-		if constexpr (traits::unit_traits<Units>::base_unit_type::ampere_ratio::num != 0) { os << " A"; }
+		if constexpr (traits::unit_traits<Units>::base_unit_type::ampere_ratio::num != 0) { os << "A"; }
 		if constexpr (traits::unit_traits<Units>::base_unit_type::ampere_ratio::num != 0 &&
 			traits::unit_traits<Units>::base_unit_type::ampere_ratio::num != 1) { os << "^" << traits::unit_traits<Units>::base_unit_type::ampere_ratio::num; }
 		if constexpr (traits::unit_traits<Units>::base_unit_type::ampere_ratio::den != 1) { os << "/" << traits::unit_traits<Units>::base_unit_type::ampere_ratio::den; }
 
-		if constexpr (traits::unit_traits<Units>::base_unit_type::kelvin_ratio::num != 0) { os << " K"; }
+		if constexpr (traits::unit_traits<Units>::base_unit_type::kelvin_ratio::num != 0) { os << "K"; }
 		if constexpr (traits::unit_traits<Units>::base_unit_type::kelvin_ratio::num != 0 &&
 			traits::unit_traits<Units>::base_unit_type::kelvin_ratio::num != 1) { os << "^" << traits::unit_traits<Units>::base_unit_type::kelvin_ratio::num; }
 		if constexpr (traits::unit_traits<Units>::base_unit_type::kelvin_ratio::den != 1) { os << "/" << traits::unit_traits<Units>::base_unit_type::kelvin_ratio::den; }
 
-		if constexpr (traits::unit_traits<Units>::base_unit_type::mole_ratio::num != 0) { os << " mol"; }
+		if constexpr (traits::unit_traits<Units>::base_unit_type::mole_ratio::num != 0) { os << "mol"; }
 		if constexpr (traits::unit_traits<Units>::base_unit_type::mole_ratio::num != 0 && 
 			traits::unit_traits<Units>::base_unit_type::mole_ratio::num != 1) { os << "^" << traits::unit_traits<Units>::base_unit_type::mole_ratio::num; }
 		if constexpr (traits::unit_traits<Units>::base_unit_type::mole_ratio::den != 1) { os << "/" << traits::unit_traits<Units>::base_unit_type::mole_ratio::den; }
 
-		if constexpr (traits::unit_traits<Units>::base_unit_type::candela_ratio::num != 0) { os << " cd"; }
+		if constexpr (traits::unit_traits<Units>::base_unit_type::candela_ratio::num != 0) { os << "cd"; }
 		if constexpr (traits::unit_traits<Units>::base_unit_type::candela_ratio::num != 0 &&
 			traits::unit_traits<Units>::base_unit_type::candela_ratio::num != 1) { os << "^" << traits::unit_traits<Units>::base_unit_type::candela_ratio::num; }
 		if constexpr (traits::unit_traits<Units>::base_unit_type::candela_ratio::den != 1) { os << "/" << traits::unit_traits<Units>::base_unit_type::candela_ratio::den; }
 
-		if constexpr (traits::unit_traits<Units>::base_unit_type::radian_ratio::num != 0) { os << " rad"; }
+		if constexpr (traits::unit_traits<Units>::base_unit_type::radian_ratio::num != 0) { os << "rad"; }
 		if constexpr (traits::unit_traits<Units>::base_unit_type::radian_ratio::num != 0 &&
 			traits::unit_traits<Units>::base_unit_type::radian_ratio::num != 1) { os << "^" << traits::unit_traits<Units>::base_unit_type::radian_ratio::num; }
 		if constexpr (traits::unit_traits<Units>::base_unit_type::radian_ratio::den != 1) { os << "/" << traits::unit_traits<Units>::base_unit_type::radian_ratio::den; }
 
-		if constexpr (traits::unit_traits<Units>::base_unit_type::byte_ratio::num != 0) { os << " b"; }
+		if constexpr (traits::unit_traits<Units>::base_unit_type::byte_ratio::num != 0) { os << "b"; }
 		if constexpr (traits::unit_traits<Units>::base_unit_type::byte_ratio::num != 0 &&
 			traits::unit_traits<Units>::base_unit_type::byte_ratio::num != 1) { os << "^" << traits::unit_traits<Units>::base_unit_type::byte_ratio::num; }
 		if constexpr (traits::unit_traits<Units>::base_unit_type::byte_ratio::den != 1) { os << "/" << traits::unit_traits<Units>::base_unit_type::byte_ratio::den; }
 
 		return os;
 	}
+
+    template<class Units, typename T, template<typename> class NonLinearScale>
+    inline std::ostream& operator<<(std::ostream& os, const unit_t<Units, T, NonLinearScale>& obj) noexcept {
+      using BaseUnits = unit<std::ratio<1>, typename traits::unit_traits<Units>::base_unit_type>;
+      os << convert<Units, BaseUnits>(obj()) << units::detail::unit_separator;
+      return abbreviation<Units>(os);
+    }
 
 	// fallback method for ephemeral, derived types
 	template <class Units, typename T, template <typename> class NonLinearScale>
@@ -2285,6 +2301,25 @@ namespace units
 		oss << val;
 		return oss.str();
 	}
+
+    template <class Units, typename T, template <typename> class NonLinearScale>
+    inline bool from_string(unit_t<Units, T, NonLinearScale>& val, std::string_view val_str) noexcept {
+        auto last_space = val_str.find_last_of(units::detail::unit_separator);
+        if (last_space == std::string::npos) {
+          return false;
+        }
+        auto unit_suffix = val_str.substr(last_space);
+
+        std::ostringstream oss;
+        abbreviation<Units>(oss);
+        std::string abbrev = oss.str();
+        if (unit_suffix != abbrev) {
+          return false;
+        }
+
+        val.as_underlying_ref() = std::stof(val_str.substr(0, last_space).data());
+        return true;
+    }
 
 #endif
 
