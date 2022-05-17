@@ -197,16 +197,19 @@ namespace units
           std::string(1, units::detail::unit_separator) + #abbrev;                 \
   }                                                                                \
   inline bool from_string(nameSingular##_t& obj, std::string_view val_str) {       \
-    auto last_space = val_str.find_last_of(units::detail::unit_separator);         \
-    if (last_space == std::string::npos) { return false; }                         \
-    auto unit_suffix = val_str.substr(last_space + 1);                             \
+    auto separator_pos = val_str.find_first_of(units::detail::unit_separator);     \
+    if (separator_pos == std::string::npos) {                                      \
+      return false;                                                                \
+    }                                                                              \
+    auto unit_suffix = val_str.substr(separator_pos + 1);                          \
                                                                                    \
     if (unit_suffix != #abbrev) {                                                  \
       return false;                                                                \
     }                                                                              \
                                                                                    \
-    obj.as_underlying_ref() = std::stof(val_str.substr(0, last_space).data());     \
-    return true;                                                                   \
+    size_t num_char_processed = 0;                                                 \
+    obj.as_underlying_ref() = std::stof(val_str.data(), &num_char_processed);      \
+    return num_char_processed == separator_pos;                                    \
   }                                                                                \
   }
 #endif
@@ -2304,11 +2307,11 @@ namespace units
 
     template <class Units, typename T, template <typename> class NonLinearScale>
     inline bool from_string(unit_t<Units, T, NonLinearScale>& val, std::string_view val_str) noexcept {
-        auto last_space = val_str.find_last_of(units::detail::unit_separator);
-        if (last_space == std::string::npos) {
+        auto separator_pos = val_str.find_first_of(units::detail::unit_separator);
+        if (separator_pos == std::string::npos) {
           return false;
         }
-        auto unit_suffix = val_str.substr(last_space);
+        std::string_view unit_suffix = val_str.substr(separator_pos + 1);
 
         std::ostringstream oss;
         abbreviation<Units>(oss);
@@ -2316,9 +2319,10 @@ namespace units
         if (unit_suffix != abbrev) {
           return false;
         }
-
-        val.as_underlying_ref() = std::stof(val_str.substr(0, last_space).data());
-        return true;
+        size_t num_char_processed = 0;
+        using BaseUnits = unit<std::ratio<1>, typename traits::unit_traits<Units>::base_unit_type>;
+        val = unit_t<BaseUnits, T, NonLinearScale>(std::stof(val_str.data(), &num_char_processed));
+        return num_char_processed == separator_pos;
     }
 
 #endif
@@ -2582,6 +2586,16 @@ namespace units
 		return UnitTypeLhs(lhs() + convert<UnitsRhs, UnitsLhs>(rhs()));
 	}
 
+#if !defined(UNIT_LIB_DISABLE_IOSTREAM)
+    inline std::ostream& operator<<(std::ostream& os, dimensionless::scalar_t const& obj) noexcept {
+      return os << obj();
+    }
+    inline bool from_string(dimensionless::scalar_t& obj, std::string_view val_str) {
+      size_t num_char_processed = 0;
+      obj.as_underlying_ref() = std::stof(val_str.data(), &num_char_processed);
+      return num_char_processed == val_str.size();
+    }
+#endif
 	/// Addition operator for scalar unit_t types with a linear_scale. Scalar types can be implicitly converted to built-in types.
 	template<typename T, std::enable_if_t<std::is_arithmetic<T>::value, int> = 0>
 	inline constexpr dimensionless::scalar_t operator+(const dimensionless::scalar_t& lhs, T rhs) noexcept
