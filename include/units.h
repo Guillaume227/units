@@ -1525,7 +1525,7 @@ namespace units
 	{
 		constexpr inline UNIT_LIB_DEFAULT_TYPE pow(UNIT_LIB_DEFAULT_TYPE x, unsigned long long y)
 		{
-			return y == 0 ? 1.0 : x * pow(x, y - 1);
+			return y == 0 ? UNIT_LIB_DEFAULT_TYPE{1} : x * pow(x, y - 1);
 		}
 
 		constexpr inline UNIT_LIB_DEFAULT_TYPE abs(UNIT_LIB_DEFAULT_TYPE x)
@@ -4245,10 +4245,10 @@ namespace units
 		static constexpr const velocity::meters_per_second_t										c(299792458.0);			///< Speed of light in vacuum.
 		static constexpr const unit_t<compound_unit<cubed<length::meters>, inverse<mass::kilogram>, inverse<squared<time::seconds>>>>	G(6.67408e-11);			///< Newtonian constant of gravitation.
 		static constexpr const unit_t<compound_unit<energy::joule, time::seconds>>							h(6.626070040e-34);		///< Planck constant.
-		static constexpr const unit_t<compound_unit<force::newtons, inverse<squared<current::ampere>>>>					mu0(pi * 4.0e-7 * force::newton_t(1) / units::math::cpow<2>(current::ampere_t(1))); ///< vacuum permeability.
-		static constexpr const unit_t<compound_unit<capacitance::farad, inverse<length::meter>>>					epsilon0(1.0 / (mu0 * math::cpow<2>(c)));		///< vacuum permitivity.
+		static constexpr const unit_t<compound_unit<force::newtons, inverse<squared<current::ampere>>>>					mu0(pi * UNIT_LIB_DEFAULT_TYPE{4.0e-7} * force::newton_t(1) / units::math::cpow<2>(current::ampere_t(1))); ///< vacuum permeability.
+		static constexpr const unit_t<compound_unit<capacitance::farad, inverse<length::meter>>>					epsilon0(1 / (mu0 * math::cpow<2>(c)));		///< vacuum permitivity.
 		static constexpr const impedance::ohm_t												Z0(mu0 * c);			///< characteristic impedance of vacuum.
-		static constexpr const unit_t<compound_unit<force::newtons, area::square_meter, inverse<squared<charge::coulomb>>>>		k_e(1.0 / (4 * pi * epsilon0));	///< Coulomb's constant.
+		static constexpr const unit_t<compound_unit<force::newtons, area::square_meter, inverse<squared<charge::coulomb>>>>		k_e(1 / (4 * pi * epsilon0));	///< Coulomb's constant.
 		static constexpr const charge::coulomb_t											e(1.6021766208e-19);		///< elementary charge.
 		static constexpr const mass::kilogram_t												m_e(9.10938356e-31);		///< electron mass.
 		static constexpr const mass::kilogram_t												m_p(1.672621898e-27);		///< proton mass.
