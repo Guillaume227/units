@@ -95,7 +95,7 @@
 	{
 		namespace detail
 		{
-            constexpr char unit_separator = '_';
+            constexpr char unit_separator = ' ';
 			template <typename T> std::string to_string(const T& t)
 			{
 				std::string str{ std::to_string(t) };
@@ -189,7 +189,7 @@ namespace units
 #define UNIT_ADD_IO(namespaceName, nameSingular, abbrev)                           \
   namespace namespaceName {                                                        \
   inline std::ostream& operator<<(std::ostream& os, const nameSingular##_t& obj) { \
-    os << obj() << "_" #abbrev;                                                    \
+    os << obj() << " " #abbrev;                                                    \
     return os;                                                                     \
   }                                                                                \
   inline std::string to_string(const nameSingular##_t& obj) {                      \
