@@ -8,10 +8,14 @@ A compile-time, header-only, dimensional analysis library built on c++14 with no
 
 If you are using `units.h` in production code, I'd love to hear from you via GitHub issues!
 
-# Latest Release - v2.3.1
+# Latest Release - v2.3.3
 
 ## Get it
-[![DOWNLOAD](https://img.shields.io/badge/Download-v2.3.1-green.svg)](https://github.com/nholthaus/units/releases/tag/v2.3.1)
+[![DOWNLOAD](https://img.shields.io/badge/Download-v2.3.3-green.svg)](https://github.com/nholthaus/units/releases/tag/v2.3.3)
+
+## New in v2.3.3
+
+- Various bug fixes and improvements
 
 ## New in v2.3.1
 
@@ -340,6 +344,25 @@ auto area = 5_m * 10_m;							// with literals
 
 All literals* are defined by their SI abbreviation preceded by an underscore, e.g. `_m` for meter. "Square" units are preceded by `_sq`, e.g. `_sq_m` for square meters. Non SI units use their most common abbreviations.
 
+All literals can be used with a metric prefix as table shows:
+
+| Metric Prefix | Literal |  Example  |
+|:-------------:|:--------:|:---------:|
+|     femto     |     f    |  `10_fm`  |
+|      pico     |     p    |  `10_pm`  |
+|      nano     |     n    |  `10_nm`  |
+|     micro     |     u    |  `10_um`  |
+|     milli     |     m    |  `10_mm`  |
+|     centi     |     c    |  `10_cm`  |
+|      deci     |     d    |  `10_dm`  |
+|      deca     |    da    |  `10_dam` |
+|     hecto     |     h    |  `10_hm`  |
+|      kilo     |     k    |  `10_km`  |
+|      mega     |     M    |  `10_Mm`  |
+|      giga     |     G    |  `10_Gm`  |
+|      tera     |     T    |  `10_Tm`  |
+|      peta     |     P    |  `10_Pm`  |
+
 All literals are defined in the `units::literals` namespace, and in order to use literals in your code ***you must include the line `using units::literals`*** (since there is no way to put a namespace on an operator).
 
 _* with the exception of `Teslas`, which use `_Te` for compatibility with MSVC compilers._
@@ -662,7 +685,34 @@ The generic algorithm is
   1. disable the pre-defined units using `#define DISABLE_PREDEFINED_UNITS`
   2. opt-in to the namespaces you want using `#define ENABLE_PREDEFINED_<namepsace name>_UNITS`
 
-Additionally, for `CMake` users, there are equivalently-named cmake options defined which will automatically include the preprocessor definitions in your project.
+Additionally, for `CMake` users, there are equivalently-named cmake options defined which will automatically include the preprocessor definitions in your project. Alternatively, you can use `add_definitions()` in your cmake file to set macros globally::
+
+  ```cpp
+  // Only use length and time
+  add_definitions(
+  	-DDISABLE_PREDEFINED_UNITS
+  	-DENABLE_PREDEFINED_LENGTH_UNITS
+  	-DENABLE_PREDEFINED_TIME_UNITS
+  )
+  ```
+  
+Be aware, some units depend on others. See the unit dependencies table bellow:
+
+|           Unit          |           Dependencies           |
+|:-----------------------:|:--------------------------------:|
+|       ACCELERATION      |           LENGTH, TIME           |
+|     ANGULAR_VELOCITY    |            ANGLE, TIME           |
+|           AREA          |              LENGTH              |
+|         DENSITY         |           MASS, VOLUME           |
+|          FORCE          | ACCELERATION, LENGTH, MASS, TIME |
+|       ILLUMINANCE       |       LENGTH, LUMINOUS_FLUX      |
+| MAGNETIC_FIELD_STRENGTH |           MAGNETIC_FLUX          |
+|         PRESSURE        |           FORCE, LENGTH          |
+|        RADIATION        |           ENERGY, MASS           |
+|       SOLID_ANGLE       |               ANGLE              |
+|          TORQUE         |           FORCE, LENGTH          |
+|         VELOCITY        |           LENGTH, TIME           |
+|          VOLUME         |              LENGTH              |
 
 # Macro clashes
 

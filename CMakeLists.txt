@@ -3,8 +3,14 @@ cmake_minimum_required(VERSION 3.2 FATAL_ERROR)
 PROJECT(units LANGUAGES CXX)
 set(units_VERSION 2.3.1)
 
+# check if this is the main project
+set(MAIN_PROJECT OFF)
+if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
+  	set(MAIN_PROJECT ON)
+endif()
+
 # cmake options
-OPTION(BUILD_TESTS "Build unit tests" ON)
+OPTION(BUILD_TESTS "Build unit tests" ${MAIN_PROJECT})
 OPTION(BUILD_DOCS "Build the documentation" OFF)
 OPTION(DISABLE_IOSTREAM "Disables <iostream> (cout) support for embedded applications" OFF)
 
@@ -19,11 +25,11 @@ OPTION(ENABLE_PREDEFINED_ANGLE_UNITS "Enables library-defined units of ANGLE." O
 OPTION(ENABLE_PREDEFINED_CURRENT_UNITS "Enables library-defined units of CURRENT." OFF)
 OPTION(ENABLE_PREDEFINED_TEMPERATURE_UNITS "Enables library-defined units of TEMPERATURE." OFF)
 OPTION(ENABLE_PREDEFINED_SUBSTANCE_UNITS "Enables library-defined units of SUBSTANCE." OFF)
-OPTION(ENABLE_PREDEFINED_LUMINOUS_UNITS "Enables library-defined units of LUMINOUS." OFF)
-OPTION(ENABLE_PREDEFINED_SOLID_UNITS "Enables library-defined units of SOLID." OFF)
+OPTION(ENABLE_PREDEFINED_LUMINOUS_INTENSITY_UNITS "Enables library-defined units of LUMINOUS INTENSITY." OFF)
+OPTION(ENABLE_PREDEFINED_SOLID_ANGLE_UNITS "Enables library-defined units of SOLID ANGLE." OFF)
 OPTION(ENABLE_PREDEFINED_FREQUENCY_UNITS "Enables library-defined units of FREQUENCY." OFF)
 OPTION(ENABLE_PREDEFINED_VELOCITY_UNITS "Enables library-defined units of VELOCITY." OFF)
-OPTION(ENABLE_PREDEFINED_ANGULAR_UNITS "Enables library-defined units of ANGULAR." OFF)
+OPTION(ENABLE_PREDEFINED_ANGULAR_VELOCITY_UNITS "Enables library-defined units of ANGULAR VELOCITY." OFF)
 OPTION(ENABLE_PREDEFINED_ACCELERATION_UNITS "Enables library-defined units of ACCELERATION." OFF)
 OPTION(ENABLE_PREDEFINED_FORCE_UNITS "Enables library-defined units of FORCE." OFF)
 OPTION(ENABLE_PREDEFINED_PRESSURE_UNITS "Enables library-defined units of PRESSURE." OFF)
@@ -33,10 +39,10 @@ OPTION(ENABLE_PREDEFINED_POWER_UNITS "Enables library-defined units of POWER." O
 OPTION(ENABLE_PREDEFINED_VOLTAGE_UNITS "Enables library-defined units of VOLTAGE." OFF)
 OPTION(ENABLE_PREDEFINED_CAPACITANCE_UNITS "Enables library-defined units of CAPACITANCE." OFF)
 OPTION(ENABLE_PREDEFINED_IMPEDANCE_UNITS "Enables library-defined units of IMPEDANCE." OFF)
-OPTION(ENABLE_PREDEFINED_MAGNETIC_UNITS "Enables library-defined units of MAGNETIC." OFF)
-OPTION(ENABLE_PREDEFINED_MAGNETIC_UNITS "Enables library-defined units of MAGNETIC." OFF)
+OPTION(ENABLE_PREDEFINED_MAGNETIC_FLUX_UNITS "Enables library-defined units of MAGNETIC FLUX." OFF)
+OPTION(ENABLE_PREDEFINED_MAGNETIC_FIELD_STRENGTH_UNITS "Enables library-defined units of MAGNETIC FIELD STRENGTH." OFF)
 OPTION(ENABLE_PREDEFINED_INDUCTANCE_UNITS "Enables library-defined units of INDUCTANCE." OFF)
-OPTION(ENABLE_PREDEFINED_LUMINOUS_UNITS "Enables library-defined units of LUMINOUS." OFF)
+OPTION(ENABLE_PREDEFINED_LUMINOUS_FLUX_UNITS "Enables library-defined units of LUMINOUS FLUX." OFF)
 OPTION(ENABLE_PREDEFINED_ILLUMINANCE_UNITS "Enables library-defined units of ILLUMINANCE." OFF)
 OPTION(ENABLE_PREDEFINED_RADIATION_UNITS "Enables library-defined units of RADIATION." OFF)
 OPTION(ENABLE_PREDEFINED_TORQUE_UNITS "Enables library-defined units of TORQUE." OFF)
@@ -45,7 +51,7 @@ OPTION(ENABLE_PREDEFINED_VOLUME_UNITS "Enables library-defined units of VOLUME."
 OPTION(ENABLE_PREDEFINED_DENSITY_UNITS "Enables library-defined units of DENSITY." OFF)
 OPTION(ENABLE_PREDEFINED_CONCENTRATION_UNITS "Enables library-defined units of CONCENTRATION." OFF)
 OPTION(ENABLE_PREDEFINED_DATA_UNITS "Enables library-defined units of DATA." OFF)
-OPTION(ENABLE_PREDEFINED_DATA_UNITS "Enables library-defined units of DATA." OFF)
+OPTION(ENABLE_PREDEFINED_DATA_TRANSFER_RATE_UNITS "Enables library-defined units of DATA TRANSFER RATE." OFF)
 OPTION(ENABLE_PREDEFINED_CONSTANTS_UNITS "Enables library-defined units of CONSTANTS." OFF)
 
 SET(CMAKE_CXX_STANDARD 14)
@@ -57,6 +63,7 @@ SET(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 # add_subdirectory(units) # or whatever you named the directory
 # target_link_libraries(${PROJECT_NAME} units)
 add_library(${PROJECT_NAME} INTERFACE)
+add_library(units::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
 target_include_directories(${PROJECT_NAME} 
 	INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include> 

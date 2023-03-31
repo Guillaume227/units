@@ -3412,8 +3412,8 @@ namespace units
 #if !defined(DISABLE_PREDEFINED_UNITS) || defined(ENABLE_PREDEFINED_LENGTH_UNITS)
 	UNIT_ADD_WITH_METRIC_PREFIXES(length, meter, meters, m, unit<std::ratio<1>, units::category::length_unit>)
 	UNIT_ADD(length, foot, feet, ft, unit<std::ratio<381, 1250>, meters>)
-	UNIT_ADD(length, mil, mils, mil, unit<std::ratio<1000>, feet>)
 	UNIT_ADD(length, inch, inches, in, unit<std::ratio<1, 12>, feet>)
+	UNIT_ADD(length, mil, mils, mil, unit<std::ratio<1000>, inches>)
 	UNIT_ADD(length, mile,   miles,    mi,    unit<std::ratio<5280>, feet>)
 	UNIT_ADD(length, nauticalMile, nauticalMiles, nmi, unit<std::ratio<1852>, meters>)
 	UNIT_ADD(length, astronicalUnit, astronicalUnits, au, unit<std::ratio<149597870700>, meters>)
@@ -4182,7 +4182,7 @@ namespace units
 	 * @brief		namespace for physical constants like PI and Avogadro's Number.
 	 * @sa			See unit_t for more information on unit type containers.
 	 */
-#if !defined(DISABLE_PREDEFINED_UNITS)
+#if !defined(DISABLE_PREDEFINED_UNITS) || defined(ENABLE_PREDEFINED_CONSTANTS_UNITS)
 	namespace constants
 	{
 		/**
@@ -4312,7 +4312,7 @@ namespace units
 		angle::radian_t acos(const ScalarUnit x) noexcept
 		{
 			static_assert(traits::is_dimensionless_unit<ScalarUnit>::value, "Type `ScalarUnit` must be a dimensionless unit derived from `unit_t`.");
-			return angle::radian_t(std::acos(x()));
+			return angle::radian_t(std::acos(x.value()));
 		}
 #endif
 
@@ -4328,7 +4328,7 @@ namespace units
 		angle::radian_t asin(const ScalarUnit x) noexcept
 		{
 			static_assert(traits::is_dimensionless_unit<ScalarUnit>::value, "Type `ScalarUnit` must be a dimensionless unit derived from `unit_t`.");
-			return angle::radian_t(std::asin(x()));
+			return angle::radian_t(std::asin(x.value()));
 		}
 #endif
 
@@ -4348,7 +4348,7 @@ namespace units
 		angle::radian_t atan(const ScalarUnit x) noexcept
 		{
 			static_assert(traits::is_dimensionless_unit<ScalarUnit>::value, "Type `ScalarUnit` must be a dimensionless unit derived from `unit_t`.");
-			return angle::radian_t(std::atan(x()));
+			return angle::radian_t(std::atan(x.value()));
 		}
 #endif
 
@@ -4439,7 +4439,7 @@ namespace units
 		angle::radian_t acosh(const ScalarUnit x) noexcept
 		{
 			static_assert(traits::is_dimensionless_unit<ScalarUnit>::value, "Type `ScalarUnit` must be a dimensionless unit derived from `unit_t`.");
-			return angle::radian_t(std::acosh(x()));
+			return angle::radian_t(std::acosh(x.value()));
 		}
 #endif
 
@@ -4455,7 +4455,7 @@ namespace units
 		angle::radian_t asinh(const ScalarUnit x) noexcept
 		{
 			static_assert(traits::is_dimensionless_unit<ScalarUnit>::value, "Type `ScalarUnit` must be a dimensionless unit derived from `unit_t`.");
-			return angle::radian_t(std::asinh(x()));
+			return angle::radian_t(std::asinh(x.value()));
 		}
 #endif
 
@@ -4473,7 +4473,7 @@ namespace units
 		angle::radian_t atanh(const ScalarUnit x) noexcept
 		{
 			static_assert(traits::is_dimensionless_unit<ScalarUnit>::value, "Type `ScalarUnit` must be a dimensionless unit derived from `unit_t`.");
-			return angle::radian_t(std::atanh(x()));
+			return angle::radian_t(std::atanh(x.value()));
 		}
 #endif
 
@@ -4497,7 +4497,7 @@ namespace units
 		dimensionless::scalar_t exp(const ScalarUnit x) noexcept
 		{
 			static_assert(traits::is_dimensionless_unit<ScalarUnit>::value, "Type `ScalarUnit` must be a dimensionless unit derived from `unit_t`.");
-			return dimensionless::scalar_t(std::exp(x()));
+			return dimensionless::scalar_t(std::exp(x.value()));
 		}
 
 		/**
@@ -4513,7 +4513,7 @@ namespace units
 		dimensionless::scalar_t log(const ScalarUnit x) noexcept
 		{
 			static_assert(traits::is_dimensionless_unit<ScalarUnit>::value, "Type `ScalarUnit` must be a dimensionless unit derived from `unit_t`.");
-			return dimensionless::scalar_t(std::log(x()));
+			return dimensionless::scalar_t(std::log(x.value()));
 		}
 
 		/**
@@ -4528,7 +4528,7 @@ namespace units
 		dimensionless::scalar_t log10(const ScalarUnit x) noexcept
 		{
 			static_assert(traits::is_dimensionless_unit<ScalarUnit>::value, "Type `ScalarUnit` must be a dimensionless unit derived from `unit_t`.");
-			return dimensionless::scalar_t(std::log10(x()));
+			return dimensionless::scalar_t(std::log10(x.value()));
 		}
 
 		/**
@@ -4548,7 +4548,7 @@ namespace units
 			static_assert(traits::is_dimensionless_unit<ScalarUnit>::value, "Type `ScalarUnit` must be a dimensionless unit derived from `unit_t`.");
 
 			UNIT_LIB_DEFAULT_TYPE intp;
-			dimensionless::scalar_t fracpart = dimensionless::scalar_t(std::modf(x(), &intp));
+			dimensionless::scalar_t fracpart = dimensionless::scalar_t(std::modf(x.value(), &intp));
 			*intpart = intp;
 			return fracpart;
 		}
@@ -4564,7 +4564,7 @@ namespace units
 		dimensionless::scalar_t exp2(const ScalarUnit x) noexcept
 		{
 			static_assert(traits::is_dimensionless_unit<ScalarUnit>::value, "Type `ScalarUnit` must be a dimensionless unit derived from `unit_t`.");
-			return dimensionless::scalar_t(std::exp2(x()));
+			return dimensionless::scalar_t(std::exp2(x.value()));
 		}
 
 		/**
@@ -4579,7 +4579,7 @@ namespace units
 		dimensionless::scalar_t expm1(const ScalarUnit x) noexcept
 		{
 			static_assert(traits::is_dimensionless_unit<ScalarUnit>::value, "Type `ScalarUnit` must be a dimensionless unit derived from `unit_t`.");
-			return dimensionless::scalar_t(std::expm1(x()));
+			return dimensionless::scalar_t(std::expm1(x.value()));
 		}
 
 		/**
@@ -4595,7 +4595,7 @@ namespace units
 		dimensionless::scalar_t log1p(const ScalarUnit x) noexcept
 		{
 			static_assert(traits::is_dimensionless_unit<ScalarUnit>::value, "Type `ScalarUnit` must be a dimensionless unit derived from `unit_t`.");
-			return dimensionless::scalar_t(std::log1p(x()));
+			return dimensionless::scalar_t(std::log1p(x.value()));
 		}
 		
 		/**
@@ -4610,7 +4610,7 @@ namespace units
 		dimensionless::scalar_t log2(const ScalarUnit x) noexcept
 		{
 			static_assert(traits::is_dimensionless_unit<ScalarUnit>::value, "Type `ScalarUnit` must be a dimensionless unit derived from `unit_t`.");
-			return dimensionless::scalar_t(std::log2(x()));
+			return dimensionless::scalar_t(std::log2(x.value()));
 		}
 
 		//----------------------------------
