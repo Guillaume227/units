@@ -79,7 +79,9 @@ namespace units
 {
 	namespace detail
 	{
-		template<typename T>
+        constexpr char unit_separator = ' ';
+
+        template<typename T>
 		std::string to_string(const T& t)
 		{
 			std::string str{std::to_string(t)};
@@ -100,6 +102,25 @@ namespace units
 			}
 			return str;
 		}
+
+        template<typename T>
+        bool from_string(T& val, const std::string_view& val_str)
+        {
+          size_t num_char_processed = 0;
+          if constexpr(std::is_same_v<T, float>) {
+            val = std::stof(val_str.data(), &num_char_processed);
+          }
+          if constexpr(std::is_same_v<T, double>) {
+            val = std::stod(val_str.data(), &num_char_processed);
+          }
+          if constexpr(std::is_same_v<T, int>) {
+            val = std::stoi(val_str.data(), &num_char_processed);
+          }
+          if (num_char_processed != val_str.size()) {
+            return false;
+          }
+          return true;
+        }
 	} // namespace detail
 } // namespace units
 #endif // !defined(UNIT_LIB_DISABLE_IOSTREAM)
@@ -232,9 +253,12 @@ namespace units
  *				are placed in the `units::literals` namespace.
  * @param		namePlural - plural version of the unit name, e.g. 'meters'
  * @param		abbreviation - abbreviated unit name, e.g. 'm'
- * @note		When UNIT_HAS_LITERAL_SUPPORT is not defined, the macro does not generate any code
+ * @note		When UNIT_NO_LITERAL_SUPPORT is not defined, the macro does not generate any code
  */
-#define UNIT_ADD_LITERALS(namespaceName, namePlural, abbreviation)                                                                                             \
+#ifdef UNIT_NO_LITERAL_SUPPORT
+ #define UNIT_ADD_LITERALS(namespaceName, namePlural, abbreviation)
+#else
+ #define UNIT_ADD_LITERALS(namespaceName, namePlural, abbreviation)                                                                                             \
 	namespace literals                                                                                                                                         \
 	{                                                                                                                                                          \
 		constexpr namespaceName::namePlural<double> operator""_##abbreviation(long double d) noexcept                                                          \
@@ -246,7 +270,7 @@ namespace units
 			return namespaceName::namePlural<int>(static_cast<int>(d));                                                                                        \
 		}                                                                                                                                                      \
 	}
-
+ #endif
 /**
  * @def			UNIT_ADD(namespaceName, namePlural, abbreviation, definition)
  * @brief		Macro for generating the boiler-plate code needed for a new unit.
@@ -1628,7 +1652,7 @@ namespace units
 		template<typename T, std::enable_if_t<std::is_floating_point_v<T>, int> = 0>
 		constexpr T sqrtNewtonRaphson(T x, T curr, T prev)
 		{
-			return curr == prev ? curr : sqrtNewtonRaphson(x, 0.5 * (curr + x / curr), curr);
+			return curr == prev ? curr : sqrtNewtonRaphson(x, T{0.5} * (curr + x / curr), curr);
 		}
 	}               // namespace Detail
 	/** @endcond */ // END DOXYGEN IGNORE
@@ -2135,7 +2159,12 @@ namespace units
 	 *				- \ref constantUnits "constant units"
 	 */
 	template<class ConversionFactor, typename T = UNIT_LIB_DEFAULT_TYPE, class NumericalScale = linear_scale>
-	class unit : public ConversionFactor, NumericalScale, units::detail::_unit
+#ifdef _WIN32
+#define MSVC_EBO __declspec(empty_bases)
+#else
+#define MSVC_EBO
+#endif
+    class MSVC_EBO unit : public ConversionFactor, NumericalScale, units::detail::_unit
 	{
 		static_assert(traits::is_conversion_factor_v<ConversionFactor>,
 			"Template parameter `ConversionFactor` must be a conversion factor. Check that you aren't using an unit "
@@ -2341,7 +2370,17 @@ namespace units
 			return static_cast<underlying_type>(NumericalScale::scale(linearized_value));
 		}
 
-		/**
+        inline constexpr underlying_type as_underlying() const noexcept
+        {
+            return linearized_value;
+        }
+
+        inline constexpr underlying_type& as_underlying_ref() noexcept
+        {
+            return linearized_value;
+        }
+
+       /**
 		 * @brief		unit value
 		 * @details     Normalizes dimensionless values to remove any scale factor they may have. E.g.
 		 * `percent(50).value() == 0.5`.
@@ -2587,6 +2626,29 @@ namespace units
 			return s;
 		}
 	}
+
+    template<class ConversionFactor, typename T, class NumericalScale>
+    bool from_string(unit<ConversionFactor, T, NumericalScale>& obj, std::string_view val_str) {
+
+        static_assert(unit_abbreviation_v<unit<ConversionFactor, T, NumericalScale>>);
+
+        auto separator_pos = val_str.find_first_of(units::detail::unit_separator);
+        if (separator_pos == std::string::npos) {
+            return false;
+        }
+        std::string_view unit_suffix = val_str.substr(separator_pos + 1);
+
+        if (unit_suffix != obj.abbreviation()) {
+            return false;
+        }
+        T val;
+        if (units::detail::from_string(val, val_str.substr(0, separator_pos))) {
+          obj = unit<ConversionFactor, T, NumericalScale>(val);
+          return true;
+        }
+        return false;
+    }
+
 #endif
 
 	//------------------------------
@@ -2626,6 +2688,13 @@ namespace std
 				common_type_t<Tx, Ty>, NumericalScale>>
 	{
 	};
+
+    template<class ConversionFactor, class T, class NumericalScale>
+    struct common_type<units::unit<ConversionFactor, T, NumericalScale>,
+            units::unit<ConversionFactor, T, NumericalScale>>
+    {
+      using type = units::unit<ConversionFactor, T, NumericalScale>;
+    };
 
 	template<class Ratio, class T, class NumericalScale, class Rep, class Period>
 	struct common_type<units::unit<units::detail::time_conversion_factor<Ratio>, T, NumericalScale>, chrono::duration<Rep, Period>>
